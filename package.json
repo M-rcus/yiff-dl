@@ -1,5 +1,5 @@
 {
-  "name": "yiff-downloader",
+  "name": "yiff-dl",
   "version": "1.0.0",
   "description": "Downloads files from creators on Yiff",
   "main": "index.js",
@@ -8,16 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/M-rcus/yiff-downloader.git"
+    "url": "git+https://github.com/M-rcus/yiff-dl.git"
   },
   "author": "Marcus <marcus@marcus.pw> (https://marcus.pw/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/M-rcus/yiff-downloader/issues"
+    "url": "https://github.com/M-rcus/yiff-dl/issues"
   },
-  "homepage": "https://github.com/M-rcus/yiff-downloader#readme",
+  "homepage": "https://github.com/M-rcus/yiff-dl#readme",
   "dependencies": {
     "axios": "^0.19.0",
+    "js-file-downloader": "^1.1.4",
     "meow": "^5.0.0"
   }
 }
