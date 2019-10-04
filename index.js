@@ -11,7 +11,7 @@ const cli = meow(`
 
     Options
       --user-agent  Specifies a custom user agent.
-      --output, -o  Specifies a custom output folder (default is current working directory).
+      --output, -o  Specifies a custom output folder (default is a folder named 'output' in the current working directory: ${process.cwd() + '/output'}).
 
     Examples
       $ yiff-dl 3519586
