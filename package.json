@@ -18,7 +18,7 @@
   "homepage": "https://github.com/M-rcus/yiff-dl#readme",
   "dependencies": {
     "axios": "^0.19.0",
-    "js-file-downloader": "^1.1.4",
+    "filenamify": "^4.1.0",
     "meow": "^5.0.0"
   }
 }
