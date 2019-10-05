@@ -5,6 +5,7 @@ const fs = fsBase.promises;
 const path = require('path');
 const filenamify = require('filenamify');
 const jsdom = require('jsdom').JSDOM;
+const ProgressBar = require('progress');
 
 const cli = meow(`
     Usage
@@ -135,11 +136,23 @@ async function downloadFile(url, dir, filename) {
         responseType: 'stream',
     });
 
+    const fileLength = parseInt(response.headers['content-length'], 10);
+    const bar = new ProgressBar(`Downloading file: ${filename} - [:bar] :percent`, {
+        complete: '=',
+        incomplete: ' ',
+        width: 20,
+        total: fileLength,
+    });
+
     response.data.pipe(fsBase.createWriteStream(output));
 
     return new Promise((resolve, reject) => {
         response.data.on('end', () => {
             resolve();
+        });
+
+        response.data.on('data', (data) => {
+            bar.tick(data.length);
         });
 
         response.data.on('error', (err) => {
@@ -204,7 +217,7 @@ async function parseInline(body) {
 }
 
 (async () => {
-    console.log('Retrieving and filtering through all creators from Yiff to get specific creator details...', 'This step might take a few seconds, please be patient...');
+    console.log('Retrieving and filtering through all creators from Yiff to get specific creator details...\n', 'This step might take a few seconds, please be patient...');
     const getAllCreators = await client('https://yiff.party/json/creators.json', {
         responseType: 'json',
     });
@@ -256,7 +269,7 @@ async function parseInline(body) {
         const postBody = post.body.replace(inlineRegex, './');
         const postBodyFile = await saveTextFile(outputPath, '_post_body.html', postBody);
         if (postBodyFile !== null) {
-            console.log(`Shared file metadata (title/description) has been downloaded to ${postBodyFile}`);
+            console.log(`Shared file metadata has been saved to ${postBodyFile}`);
         }
 
         /**
@@ -322,7 +335,7 @@ async function parseInline(body) {
 
                 const metaFile = await saveTextFile(outputPath, `${fileName}.meta`, metaText);
                 if (metaFile !== null) {
-                    console.log(`Shared file metadata (title/description) has been downloaded to ${metaFile}`);
+                    console.log(`Shared file metadata has been downloaded to ${metaFile}`);
                 }
             }
         }
