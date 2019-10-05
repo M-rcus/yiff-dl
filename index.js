@@ -152,7 +152,36 @@ async function downloadFile(url, dir, filename) {
 }
 
 /**
+ * Saves a text file with UTF-8 encoding.
+ *
+ * @param {String} dir
+ * @param {String} filename
+ * @param {String} text
+ */
+async function saveTextFile(dir, filename, text) {
+    filename = filenamify(filename);
+    const output = `${dir}/${filename}`;
+
+    try {
+        await fs.writeFile(output, text, {
+            encoding: 'utf8',
+        });
+
+        return output;
+    }
+    catch (err) {
+        console.error(`Error writing file: ${output}`);
+        console.error(err);
+
+        return null;
+    }
+}
+
+/**
  * Matches inline URLs in body.
+ * TODO:
+ *   - Parse post bodies and make sure that `patreon_inline` URLs are downloaded
+ *     - Good starting point: `src="(\/patreon_inline\/${postId}\/[\w-_]+\.[A-z0-9]{2,6})"`
  */
 async function matchInline(body, postId) {
     const exp = new RegExp(`src="(/patreon_inline/${postId}/[\\w-_]+\\.[A-z0-9]{2,6})"`, 'g');
@@ -207,6 +236,14 @@ async function matchInline(body, postId) {
         }
 
         /**
+         * Save post body as HTML file.
+         */
+        const postBody = await saveTextFile(outputPath, '_post_body.html', post.body);
+        if (postBody !== null) {
+            console.log(`Shared file metadata (title/description) has been downloaded to ${postBody}`);
+        }
+
+        /**
          * Download Patreon post attachments
          */
         const attachments = post.attachments;
@@ -235,10 +272,29 @@ async function matchInline(body, postId) {
     }
 
     /**
-     * TODO:
-     * - Parse post bodies and make sure that `patreon_inline` URLs are downloaded
-     *      - Good starting point: `src="(\/patreon_inline\/${postId}\/[\w-_]+\.[A-z0-9]{2,6})"`
-     * - Download `shared_files`
+     * Handle downloads of "shared files"
      */
-    console.log(getCreatorData.data);
+    const outputPath = await checkAndCreateDir(`${outputBase}/_SharedFiles`);
+    if (outputPath === null) {
+        console.error(`An error occurred verifying/creating directory: ${outputPath}`);
+    } else {
+        for (const sharedIndex in shared_files) {
+            const sharedFile = shared_files[sharedIndex];
+            const { file_name, file_url, title, description, id } = sharedFile;
+
+            const fileName = `${id}_${file_name}`;
+            const metaText = `Title: ${title}\nDescription: ${description === null ? '<None>' : description}`;
+
+            const sharedFileDownload = await downloadFile(file_url, outputPath, fileName);
+
+            if (sharedFileDownload !== null) {
+                console.log(`Downloaded the shared file: ${fileName} - Title: ${title}`);
+
+                const metaFile = await saveTextFile(outputPath, `${fileName}.meta`, metaText);
+                if (metaFile !== null) {
+                    console.log(`Shared file metadata (title/description) has been downloaded to ${metaFile}`);
+                }
+            }
+        }
+    }
 })();
