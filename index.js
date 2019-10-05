@@ -265,12 +265,15 @@ async function parseInline(body) {
 
         /**
          * Save post body as HTML file.
+         * Sometimes `post.body` might not exist (empty)
          */
-        const inlineRegex = new RegExp(`/patreon_inline/${post.id}/`, 'g');
-        const postBody = post.body.replace(inlineRegex, './');
-        const postBodyFile = await saveTextFile(outputPath, '_post_body.html', postBody);
-        if (postBodyFile !== null) {
-            console.log(`Shared file metadata has been saved to ${postBodyFile}`);
+        if (post.body) {
+            const inlineRegex = new RegExp(`/patreon_inline/${post.id}/`, 'g');
+            const postBody = post.body.replace(inlineRegex, './');
+            const postBodyFile = await saveTextFile(outputPath, '_post_body.html', postBody);
+            if (postBodyFile !== null) {
+                console.log(`Shared file metadata has been saved to ${postBodyFile}`);
+            }
         }
 
         /**
