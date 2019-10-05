@@ -4,6 +4,7 @@ const fsBase = require('fs');
 const fs = fsBase.promises;
 const path = require('path');
 const filenamify = require('filenamify');
+const jsdom = require('jsdom').JSDOM;
 
 const cli = meow(`
     Usage
@@ -11,7 +12,7 @@ const cli = meow(`
 
     Options
       --user-agent  Specifies a custom user agent.
-      --output, -o  Specifies a custom output folder (default is a folder named 'output' in the current working directory: ${process.cwd() + '/output'}).
+      --output, -o  Specifies a custom output folder (default is a folder named 'yiff-dl-output' in the current working directory: ${process.cwd() + '/yiff-dl-output'}).
 
     Examples
       $ yiff-dl 3519586
@@ -26,7 +27,7 @@ const cli = meow(`
         output: {
             type: 'string',
             alias: 'o',
-            default: process.cwd() + '/output',
+            default: process.cwd() + '/yiff-dl-output',
         },
     },
 });
@@ -79,7 +80,7 @@ async function formatDate(date) {
  */
 async function normalizePath(dir) {
     return dir
-        .replace(/[^a-z0-9]/gi, '_')
+        .replace(/[^a-z0-9-]/gi, '_')
         // Avoid double (or more) underscores
         .replace(/_{2,}/g, '_');
 }
@@ -178,15 +179,28 @@ async function saveTextFile(dir, filename, text) {
 }
 
 /**
- * Matches inline URLs in body.
- * TODO:
- *   - Parse post bodies and make sure that `patreon_inline` URLs are downloaded
- *     - Good starting point: `src="(\/patreon_inline\/${postId}\/[\w-_]+\.[A-z0-9]{2,6})"`
+ * Parses post the post body and extracts the inline images.
+ *
+ * @param {String} body
  */
-async function matchInline(body, postId) {
-    const exp = new RegExp(`src="(/patreon_inline/${postId}/[\\w-_]+\\.[A-z0-9]{2,6})"`, 'g');
+async function parseInline(body) {
+    const dom = new jsdom(body);
+    const inlineImages = Array.from(dom.window.document.querySelectorAll('img'));
 
-    return body.match(exp);
+    const imageLinks = inlineImages.map((img) => {
+        const src = img.src;
+        let prefix = 'https://yiff.party';
+        // Only add a forward slash at the end of the prefix
+        // if src doesn't already include it.
+        // In most cases it should...
+        if (src[0] !== '/') {
+            prefix += '/';
+        }
+
+        return prefix + src;
+    });
+
+    return imageLinks;
 }
 
 (async () => {
@@ -238,9 +252,25 @@ async function matchInline(body, postId) {
         /**
          * Save post body as HTML file.
          */
-        const postBody = await saveTextFile(outputPath, '_post_body.html', post.body);
-        if (postBody !== null) {
-            console.log(`Shared file metadata (title/description) has been downloaded to ${postBody}`);
+        const inlineRegex = new RegExp(`/patreon_inline/${post.id}/`, 'g');
+        const postBody = post.body.replace(inlineRegex, './');
+        const postBodyFile = await saveTextFile(outputPath, '_post_body.html', postBody);
+        if (postBodyFile !== null) {
+            console.log(`Shared file metadata (title/description) has been downloaded to ${postBodyFile}`);
+        }
+
+        /**
+         * Save inline media (images) from the post body.
+         */
+        const inlineImages = await parseInline(post.body);
+        for (const imgIndex in inlineImages) {
+            const imageUrl = inlineImages[imgIndex];
+            const fileName = imageUrl.replace(/.*\//g, '');
+            const inlineFile = await downloadFile(imageUrl, outputPath, fileName);
+
+            if (inlineFile !== null) {
+                console.log(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${post.id})`);
+            }
         }
 
         /**
