@@ -1,6 +1,6 @@
 {
-    "name": "@M-rcus/yiff-dl",
-    "version": "1.0.0",
+    "name": "@m-rcus/yiff-dl",
+    "version": "1.0.1",
     "description": "Downloads files from creators on Yiff",
     "main": "index.js",
     "scripts": {
