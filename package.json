@@ -1,5 +1,5 @@
 {
-    "name": "yiff-dl",
+    "name": "@M-rcus/yiff-dl",
     "version": "1.0.0",
     "description": "Downloads files from creators on Yiff",
     "main": "index.js",
@@ -25,5 +25,8 @@
     },
     "publishConfig": {
         "registry": "https://npm.pkg.github.com/"
+    },
+    "bin": {
+        "yiff-dl": "index.js"
     }
 }

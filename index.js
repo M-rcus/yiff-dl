@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const meow = require('meow');
 const axios = require('axios');
 const fsBase = require('fs');
