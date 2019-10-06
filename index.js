@@ -132,38 +132,46 @@ async function downloadFile(url, dir, filename) {
         return null;
     }
 
-    const response = await client({
-        url: url,
-        responseType: 'stream',
-    });
-
-    const fileLength = parseInt(response.headers['content-length'], 10);
-    const bar = new ProgressBar(`Downloading file: ${filename} - [:bar] :percent`, {
-        complete: '=',
-        incomplete: ' ',
-        width: 20,
-        total: fileLength,
-    });
-
-    response.data.pipe(fsBase.createWriteStream(output));
-
-    return new Promise((resolve, reject) => {
-        response.data.on('end', () => {
-            resolve();
+    // Lazily catch errors
+    try {
+        const response = await client({
+            url: url,
+            responseType: 'stream',
         });
 
-        response.data.on('data', (data) => {
-            bar.tick(data.length);
+        const fileLength = parseInt(response.headers['content-length'], 10);
+        const bar = new ProgressBar(`Downloading file: ${filename} - [:bar] :percent`, {
+            complete: '=',
+            incomplete: ' ',
+            width: 20,
+            total: fileLength,
         });
 
-        response.data.on('error', (err) => {
-            console.error(`An error occurred downloading URL: ${url}`);
-            console.error(`Could not save file: ${output}`);
-            console.error(err);
+        response.data.pipe(fsBase.createWriteStream(output));
 
-            reject(err);
+        return new Promise((resolve, reject) => {
+            response.data.on('end', () => {
+                resolve();
+            });
+
+            response.data.on('data', (data) => {
+                bar.tick(data.length);
+            });
+
+            response.data.on('error', (err) => {
+                console.error(`An error occurred downloading URL: ${url}`);
+                console.error(`Could not save file: ${output}`);
+                console.error(err);
+
+                reject(err);
+            });
         });
-    });
+    }
+    catch (err) {
+        console.error(`An error occurred downloading URL: ${url}`);
+        console.error(err);
+        return null;
+    }
 }
 
 /**
