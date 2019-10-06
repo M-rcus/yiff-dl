@@ -168,8 +168,7 @@ async function downloadFile(url, dir, filename) {
         });
     }
     catch (err) {
-        console.error(`An error occurred downloading URL: ${url}`);
-        console.error(err);
+        console.error(`An error occurred downloading URL: ${url} -- Skipping`);
         return null;
     }
 }
