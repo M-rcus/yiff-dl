@@ -1,6 +1,6 @@
 {
-    "name": "@m-rcus/yiff-dl",
-    "version": "1.0.1",
+    "name": "yiff-dl",
+    "version": "1.0.2",
     "description": "Downloads files from creators on Yiff",
     "main": "index.js",
     "scripts": {
@@ -19,12 +19,10 @@
     "dependencies": {
         "axios": "^0.19.0",
         "filenamify": "^4.1.0",
-        "jsdom": "^15.1.1",
+        "jsdom": "^15.2.0",
         "meow": "^5.0.0",
+        "node-html-parser": "^1.1.16",
         "progress": "^2.0.3"
-    },
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com/"
     },
     "bin": {
         "yiff-dl": "index.js"

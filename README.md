@@ -30,3 +30,7 @@ See [Parameters](#parameters) for more advanced options.
 
 - `--user-agent` - Specifies a custom user agent - Default: `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0`
 - `--output, -o` - Specifies a custom output folder - Default: Folder named `yiff-dl-output` in the current working directory, for example: `/data/projects/yiff-dl/yiff-dl-output`
+
+## Notes
+
+- There are two HTML/DOM parsers in this project, mainly because I added one in the very beginning of the project and then forgot it existed a few weeks later when I implemented a new feature. Whoops.

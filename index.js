@@ -7,6 +7,7 @@ const path = require('path');
 const filenamify = require('filenamify');
 const jsdom = require('jsdom').JSDOM;
 const ProgressBar = require('progress');
+const htmlparser = require('node-html-parser');
 
 const cli = meow(`
     Usage
@@ -24,7 +25,7 @@ const cli = meow(`
     flags: {
         userAgent: {
             type: 'string',
-            default: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0',
+            default: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
         },
         output: {
             type: 'string',
@@ -250,6 +251,12 @@ async function parseInline(body) {
     });
     const { posts, shared_files } = getCreatorData.data;
 
+    const getCreatorPage = await client(`https://yiff.party/patreon/${creatorId}`, {
+        responseType: 'document',
+    });
+
+    const parsedPage = htmlparser.parse(getCreatorPage.data);
+
     console.log(`Downloading started for creator: ${creatorDetails.name} (${creatorId})`);
     const outputBase = cli.flags.output;
 
@@ -280,6 +287,31 @@ async function parseInline(body) {
             const postBodyFile = await saveTextFile(outputPath, '_post_body.html', postBody);
             if (postBodyFile !== null) {
                 console.log(`Shared file metadata has been saved to ${postBodyFile}`);
+            }
+        }
+
+        const postMedia = parsedPage.querySelector(`#p${post.id} .card-attachments`);
+        if (postMedia) {
+            const title = postMedia.querySelector('.card-title');
+            const textTitle = title ? title.toString() : '';
+
+            if (textTitle.includes('Media')) {
+                const links = postMedia.querySelectorAll('a');
+
+                for (const linkIndex in links) {
+                    const link = links[linkIndex];
+                    const linkUrl = link.attributes.href;
+                    const filename = link.innerHTML;
+
+                    if (!linkUrl) {
+                        continue;
+                    }
+
+                    const mediaAttachment = await downloadFile(linkUrl, outputPath, filename);
+                    if (mediaAttachment !== null) {
+                        console.log(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${post.id})`);
+                    }
+                }
             }
         }
 
