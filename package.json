@@ -1,6 +1,6 @@
 {
     "name": "yiff-dl",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Downloads files from creators on Yiff",
     "main": "index.js",
     "scripts": {

@@ -225,6 +225,15 @@ async function parseInline(body) {
     return imageLinks;
 }
 
+/**
+ * Set a maximum length for names
+ * Certain Patreon post titles are extremely long, so let's cut them a bit.
+ *
+ * 60 characters is a somewhat sane character length,
+ * since it should preserve most of the context (if any).
+ */
+const maxNameLength = 60;
+
 (async () => {
     console.log('Retrieving and filtering through all creators from Yiff to get specific creator details...\n', 'This step might take a few seconds, please be patient...');
     const getAllCreators = await client('https://yiff.party/json/creators.json', {
@@ -268,8 +277,13 @@ async function parseInline(body) {
          */
         const postCreated = new Date(post.created * 1000);
         const postDate = await formatDate(postCreated);
+        let title = post.title;
 
-        let outputPath = `${outputBase}/${postDate}_${await normalizePath(post.title)}_${post.id}`;
+        if (title.length > maxNameLength) {
+            title = title.substring(0, maxNameLength - 1);
+        }
+
+        let outputPath = `${outputBase}/${postDate}_${await normalizePath(title)}_${post.id}`;
         outputPath = await checkAndCreateDir(outputPath);
 
         if (outputPath === null) {
