@@ -170,6 +170,11 @@ const maxNameLength = 60;
         signale.info(`Subfolder flag specified. Final output directory is: ${outputBase}`);
     }
 
+    /**
+     * Display a timer for how long the total download took.
+     */
+    const downloadTimerName = `Yiff Download ${creatorDetails.name}`;
+    signale.time(downloadTimerName);
     for (const post of posts) {
         /**
          * Extract the date the Patreon post was created.
@@ -291,4 +296,6 @@ const maxNameLength = 60;
             }
         }
     }
+
+    signale.timeEnd(downloadTimerName);
 })();
