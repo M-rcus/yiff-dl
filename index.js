@@ -2,6 +2,7 @@
 const meow = require('meow');
 const htmlparser = require('node-html-parser');
 const signale = require('signale');
+const path = require('path');
 
 /**
  * Configure signale logger with custom settings
@@ -156,11 +157,20 @@ const maxNameLength = 60;
     /**
      * Specifies the base folder for output
      */
-    const outputBase = cli.flags.output + (cli.flags.subfolder ? `/${creatorDetails.name}` : '');
+    const {output, subfolder} = cli.flags;
+    const outputBase = path.normalize(
+        output +
+        (subfolder ? `/${creatorDetails.name}` : '')
+    );
 
-    for (const postIndex in posts) {
-        const post = posts[postIndex];
+    /**
+     * Tell user what the final output base directory will be
+     */
+    if (subfolder) {
+        signale.info(`Subfolder flag specified. Final output directory is: ${outputBase}`);
+    }
 
+    for (const post of posts) {
         /**
          * Extract the date the Patreon post was created.
          */
@@ -201,8 +211,7 @@ const maxNameLength = 60;
             if (textTitle.includes('Media')) {
                 const links = postMedia.querySelectorAll('a');
 
-                for (const linkIndex in links) {
-                    const link = links[linkIndex];
+                for (const link of links) {
                     const linkUrl = link.attributes.href;
                     const filename = link.innerHTML;
 
@@ -222,8 +231,7 @@ const maxNameLength = 60;
          * Save inline media (images) from the post body.
          */
         const inlineImages = await _.parseInline(post.body);
-        for (const imgIndex in inlineImages) {
-            const imageUrl = inlineImages[imgIndex];
+        for (const imageUrl of inlineImages) {
             const fileName = imageUrl.replace(/.*\//g, '');
             const inlineFile = await _.downloadFile(imageUrl, outputPath, fileName);
 
@@ -236,9 +244,7 @@ const maxNameLength = 60;
          * Download Patreon post attachments
          */
         const attachments = post.attachments;
-        for (const attachIndex in attachments) {
-            const attachment = attachments[attachIndex];
-
+        for (const attachment of attachments) {
             const fileName = attachment.file_name;
             const attachmentSave = await _.downloadFile(attachment.file_url, outputPath, fileName);
 
@@ -267,8 +273,7 @@ const maxNameLength = 60;
     if (outputPath === null) {
         signale.error(`An error occurred verifying/creating directory: ${outputPath}`);
     } else {
-        for (const sharedIndex in shared_files) {
-            const sharedFile = shared_files[sharedIndex];
+        for (const sharedFile of shared_files) {
             const { file_name, file_url, title, description, id } = sharedFile;
 
             const fileName = `${id}_${file_name}`;
