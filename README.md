@@ -46,9 +46,9 @@ This is basically the same method as the one used prior to version 1.1.0.
 
 yiff-dl allows for some customization using more advanced parameters.
 
-- `--output, -o $outputFolder` - Specifies a custom output folder - Default: Folder named `yiff-dl-output` in the current working directory, for example: `/data/projects/yiff-dl/yiff-dl-output`
+- `--output, -o /data/custom/output/folder` - Specifies a custom output folder - Default: Folder named `yiff-dl-output` in the current working directory, for example: `/data/projects/yiff-dl/yiff-dl-output`
 - `--subfolder, -s` - If specified, a subfolder with the creator name is created in the output directory. Example: `/data/projects/yiff-dl/yiff-dl-output/marcus`
-- `--user-agent $userAgent` - Specifies a custom user agent - Default (as of 1.0.3): `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0`
+- `--user-agent KittyCatMeow/1.0.0` - Specifies a custom user agent - Default (as of 1.0.3): `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0`
 
 ## Notes
 
