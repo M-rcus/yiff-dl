@@ -235,7 +235,8 @@ async function parseInline(body) {
 const maxNameLength = 60;
 
 (async () => {
-    console.log('Retrieving and filtering through all creators from Yiff to get specific creator details...\n', 'This step might take a few seconds, please be patient...');
+    console.log('Retrieving and filtering through all creators from Yiff to get specific creator details...');
+    console.log('This step might take a few seconds, please be patient...');
     const getAllCreators = await client('https://yiff.party/json/creators.json', {
         responseType: 'json',
     });
@@ -247,6 +248,11 @@ const maxNameLength = 60;
     const creatorDetails = creators.find((creator) => {
         return creator.id === creatorId;
     });
+
+    if (!creatorDetails) {
+        console.log(`Could not find creator on Yiff: ${creatorId}`);
+        return null;
+    }
 
     console.log('Found creator details:');
     console.log(JSON.stringify(creatorDetails, null, 4));
