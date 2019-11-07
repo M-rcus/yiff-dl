@@ -120,14 +120,14 @@ async function downloadFile(url, dir, filename) {
             response.data.on('error', err => {
                 signale.error(`An error occurred downloading URL: ${url}`);
                 signale.error(`Could not save file: ${output}`);
-                console.error(err);
+                signale.error(err);
 
                 reject(err);
             });
         });
     } catch (err) {
         signale.error(`An error occurred downloading URL: ${url} -- Skipping`);
-        console.error(err);
+        signale.error(err);
         return null;
     }
 }
@@ -151,7 +151,7 @@ async function saveTextFile(dir, filename, text) {
         return output;
     } catch (err) {
         signale.error(`Error writing file: ${output}`);
-        console.error(err);
+        signale.error(err);
 
         return null;
     }
