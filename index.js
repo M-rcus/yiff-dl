@@ -3,6 +3,14 @@ const meow = require('meow');
 const htmlparser = require('node-html-parser');
 const signale = require('signale');
 
+/**
+ * Configure signale logger with custom settings
+ */
+signale.config({
+    displayDate: true,
+    displayTimestamp: true,
+});
+
 const cli = meow(`
     Usage
       $ yiff-dl <Creator ID or Yiff.party creator URL>
@@ -40,11 +48,31 @@ const _ = require('./helpers')(cli);
  * Accept input that is either the creator ID, or the Yiff.party URL (which includes the creator ID).
  */
 const removeYiffPrefix = /((http)?(s?)):\/\/yiff\.party(\/patreon)?\//g;
-const creatorId = parseInt(cli.input[0].replace(removeYiffPrefix, ''), 10);
+const creatorInput = cli.input[0]
+    .trim()
+    .replace(removeYiffPrefix, '');
 
-if (/^[\d]+$/.test(creatorId) === false) {
-    signale.error('Invalid creator ID specified. All creator ID are numerics (example: 3519586).');
-    process.exit(1);
+/**
+ * Assume it's a creator ID (not Patreon name)
+ */
+let isCreatorId = true;
+
+/**
+ * Check if it matches the creator ID format.
+ * If it doesn't, treat it as Patreon name
+ */
+if (/^[\d]+$/.test(creatorInput) === false) {
+    signale.info(`Input (${creatorInput}) does not match creator ID format. Assuming it's the Patreon name.`);
+    isCreatorId = false;
+}
+
+/**
+ * Yiff's JSON data treats creator IDs as ints,
+ * so we need to convert our creator ID too.
+ */
+let creatorId = null;
+if (isCreatorId) {
+    creatorId = parseInt(creatorInput, 10);
 }
 
 /**
@@ -68,15 +96,37 @@ const maxNameLength = 60;
      */
     const creators = getAllCreators.data.creators;
     const creatorDetails = creators.find((creator) => {
-        return creator.id === creatorId;
+        /**
+         * Creator IDs are matched directly.
+         */
+        if (isCreatorId) {
+            return creator.id === creatorId;
+        }
+
+        /**
+         * Creator names need to be in the same case before we can compare them.
+         */
+        const creatorName = creator.name
+            .toLowerCase()
+            .trim();
+
+        return creatorName === creatorInput.toLowerCase();
     });
 
     if (!creatorDetails) {
-        signale.info(`Could not find creator on Yiff: ${creatorId}`);
+        signale.info(`Could not find creator on Yiff: ${creatorInput}`);
         return null;
     }
 
-    signale.info('Found creator details:');
+    /**
+     * If creatorId wasn't specified, we need to manually
+     * set it based on data from Yiff.
+     */
+    if (!creatorId) {
+        creatorId = creatorDetails.id;
+    }
+
+    signale.success('Found creator details:');
     console.log(JSON.stringify(creatorDetails, null, 4));
 
     /**
@@ -128,7 +178,7 @@ const maxNameLength = 60;
             const postBody = post.body.replace(inlineRegex, './');
             const postBodyFile = await _.saveTextFile(outputPath, '_post_body.html', postBody);
             if (postBodyFile !== null) {
-                signale.info(`Shared file metadata has been saved to ${postBodyFile}`);
+                signale.success(`Shared file metadata has been saved to ${postBodyFile}`);
             }
         }
 
@@ -151,7 +201,7 @@ const maxNameLength = 60;
 
                     const mediaAttachment = await _.downloadFile(linkUrl, outputPath, filename);
                     if (mediaAttachment !== null) {
-                        signale.info(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${post.id})`);
+                        signale.success(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${post.id})`);
                     }
                 }
             }
@@ -167,7 +217,7 @@ const maxNameLength = 60;
             const inlineFile = await _.downloadFile(imageUrl, outputPath, fileName);
 
             if (inlineFile !== null) {
-                signale.info(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${post.id})`);
+                signale.success(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${post.id})`);
             }
         }
 
@@ -182,7 +232,7 @@ const maxNameLength = 60;
             const attachmentSave = await _.downloadFile(attachment.file_url, outputPath, fileName);
 
             if (attachmentSave !== null) {
-                signale.info(`Downloaded the attachment file: ${fileName} for post titled: ${post.title} (${post.id})`);
+                signale.success(`Downloaded the attachment file: ${fileName} for post titled: ${post.title} (${post.id})`);
             }
         }
 
@@ -194,7 +244,7 @@ const maxNameLength = 60;
         if (postFile.post_file) {
             const postFileSave = await _.downloadFile(postFile.file_url, outputPath, postFile.file_name);
             if (postFileSave !== null) {
-                signale.info(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${post.id})`);
+                signale.success(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${post.id})`);
             }
         }
     }
@@ -216,11 +266,11 @@ const maxNameLength = 60;
             const sharedFileDownload = await _.downloadFile(file_url, outputPath, fileName);
 
             if (sharedFileDownload !== null) {
-                signale.info(`Downloaded the shared file: ${fileName} - Title: ${title}`);
+                signale.success(`Downloaded the shared file: ${fileName} - Title: ${title}`);
 
                 const metaFile = await _.saveTextFile(outputPath, `${fileName}.meta`, metaText);
                 if (metaFile !== null) {
-                    signale.info(`Shared file metadata has been downloaded to ${metaFile}`);
+                    signale.success(`Shared file metadata has been downloaded to ${metaFile}`);
                 }
             }
         }

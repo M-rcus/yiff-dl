@@ -57,7 +57,7 @@ async function checkAndCreateDir(dir) {
             recursive: true,
         });
 
-        signale.info(`Resolved & created directory: ${dir}`);
+        signale.success(`Resolved & created directory: ${dir}`);
         return dir;
     }
 
@@ -107,10 +107,12 @@ async function downloadFile(url, dir, filename) {
         );
 
         response.data.pipe(fsBase.createWriteStream(output));
+        signale.time(filename);
 
         return new Promise((resolve, reject) => {
             response.data.on('end', () => {
                 resolve();
+                signale.timeEnd(filename);
             });
 
             response.data.on('data', data => {
@@ -118,6 +120,8 @@ async function downloadFile(url, dir, filename) {
             });
 
             response.data.on('error', err => {
+                signale.timeEnd(filename);
+
                 signale.error(`An error occurred downloading URL: ${url}`);
                 signale.error(`Could not save file: ${output}`);
                 signale.error(err);
