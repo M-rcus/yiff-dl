@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const meow = require('meow');
 const htmlparser = require('node-html-parser');
+const signale = require('signale');
 
 const cli = meow(`
     Usage
@@ -29,7 +30,7 @@ const cli = meow(`
 });
 
 if (cli.input.length === 0) {
-    console.error('Please specify creator ID!');
+    signale.error('Please specify creator ID!');
     process.exit(1);
 }
 
@@ -42,7 +43,7 @@ const removeYiffPrefix = /((http)?(s?)):\/\/yiff\.party(\/patreon)?\//g;
 const creatorId = parseInt(cli.input[0].replace(removeYiffPrefix, ''), 10);
 
 if (/^[\d]+$/.test(creatorId) === false) {
-    console.error('Invalid creator ID specified. All creator ID are numerics (example: 3519586).');
+    signale.error('Invalid creator ID specified. All creator ID are numerics (example: 3519586).');
     process.exit(1);
 }
 
@@ -56,8 +57,8 @@ if (/^[\d]+$/.test(creatorId) === false) {
 const maxNameLength = 60;
 
 (async () => {
-    console.log('Retrieving and filtering through all creators from Yiff to get specific creator details...');
-    console.log('This step might take a few seconds, please be patient...');
+    signale.info('Retrieving and filtering through all creators from Yiff to get specific creator details...');
+    signale.info('This step might take a few seconds, please be patient...');
     const getAllCreators = await _.client('https://yiff.party/json/creators.json', {
         responseType: 'json',
     });
@@ -71,17 +72,17 @@ const maxNameLength = 60;
     });
 
     if (!creatorDetails) {
-        console.log(`Could not find creator on Yiff: ${creatorId}`);
+        signale.info(`Could not find creator on Yiff: ${creatorId}`);
         return null;
     }
 
-    console.log('Found creator details:');
+    signale.info('Found creator details:');
     console.log(JSON.stringify(creatorDetails, null, 4));
 
     /**
      * Get specific posts and shared files related to creator.
      */
-    console.log('Getting specific creator data from Yiff (posts, shared files etc.)');
+    signale.info('Getting specific creator data from Yiff (posts, shared files etc.)');
     const getCreatorData = await _.client(`https://yiff.party/${creatorId}.json`, {
         responseType: 'json',
     });
@@ -93,7 +94,7 @@ const maxNameLength = 60;
 
     const parsedPage = htmlparser.parse(getCreatorPage.data);
 
-    console.log(`Downloading started for creator: ${creatorDetails.name} (${creatorId})`);
+    signale.info(`Downloading started for creator: ${creatorDetails.name} (${creatorId})`);
     const outputBase = cli.flags.output;
 
     for (const postIndex in posts) {
@@ -114,7 +115,7 @@ const maxNameLength = 60;
         outputPath = await _.checkAndCreateDir(outputPath);
 
         if (outputPath === null) {
-            console.error(`An error occurred verifying/creating directory: ${outputPath}`);
+            signale.error(`An error occurred verifying/creating directory: ${outputPath}`);
             continue;
         }
 
@@ -127,7 +128,7 @@ const maxNameLength = 60;
             const postBody = post.body.replace(inlineRegex, './');
             const postBodyFile = await _.saveTextFile(outputPath, '_post_body.html', postBody);
             if (postBodyFile !== null) {
-                console.log(`Shared file metadata has been saved to ${postBodyFile}`);
+                signale.info(`Shared file metadata has been saved to ${postBodyFile}`);
             }
         }
 
@@ -150,7 +151,7 @@ const maxNameLength = 60;
 
                     const mediaAttachment = await _.downloadFile(linkUrl, outputPath, filename);
                     if (mediaAttachment !== null) {
-                        console.log(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${post.id})`);
+                        signale.info(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${post.id})`);
                     }
                 }
             }
@@ -166,7 +167,7 @@ const maxNameLength = 60;
             const inlineFile = await _.downloadFile(imageUrl, outputPath, fileName);
 
             if (inlineFile !== null) {
-                console.log(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${post.id})`);
+                signale.info(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${post.id})`);
             }
         }
 
@@ -181,7 +182,7 @@ const maxNameLength = 60;
             const attachmentSave = await _.downloadFile(attachment.file_url, outputPath, fileName);
 
             if (attachmentSave !== null) {
-                console.log(`Downloaded the attachment file: ${fileName} for post titled: ${post.title} (${post.id})`);
+                signale.info(`Downloaded the attachment file: ${fileName} for post titled: ${post.title} (${post.id})`);
             }
         }
 
@@ -193,7 +194,7 @@ const maxNameLength = 60;
         if (postFile.post_file) {
             const postFileSave = await _.downloadFile(postFile.file_url, outputPath, postFile.file_name);
             if (postFileSave !== null) {
-                console.log(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${post.id})`);
+                signale.info(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${post.id})`);
             }
         }
     }
@@ -203,7 +204,7 @@ const maxNameLength = 60;
      */
     const outputPath = await _.checkAndCreateDir(`${outputBase}/_SharedFiles`);
     if (outputPath === null) {
-        console.error(`An error occurred verifying/creating directory: ${outputPath}`);
+        signale.error(`An error occurred verifying/creating directory: ${outputPath}`);
     } else {
         for (const sharedIndex in shared_files) {
             const sharedFile = shared_files[sharedIndex];
@@ -215,11 +216,11 @@ const maxNameLength = 60;
             const sharedFileDownload = await _.downloadFile(file_url, outputPath, fileName);
 
             if (sharedFileDownload !== null) {
-                console.log(`Downloaded the shared file: ${fileName} - Title: ${title}`);
+                signale.info(`Downloaded the shared file: ${fileName} - Title: ${title}`);
 
                 const metaFile = await _.saveTextFile(outputPath, `${fileName}.meta`, metaText);
                 if (metaFile !== null) {
-                    console.log(`Shared file metadata has been downloaded to ${metaFile}`);
+                    signale.info(`Shared file metadata has been downloaded to ${metaFile}`);
                 }
             }
         }

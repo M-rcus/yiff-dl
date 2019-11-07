@@ -22,7 +22,8 @@
         "jsdom": "^15.2.0",
         "meow": "^5.0.0",
         "node-html-parser": "^1.1.16",
-        "progress": "^2.0.3"
+        "progress": "^2.0.3",
+        "signale": "^1.4.0"
     },
     "bin": {
         "yiff-dl": "index.js"

@@ -5,6 +5,7 @@ const path = require('path');
 const filenamify = require('filenamify');
 const jsdom = require('jsdom').JSDOM;
 const ProgressBar = require('progress');
+const signale = require('signale');
 
 let client = new axios.create();
 
@@ -56,13 +57,13 @@ async function checkAndCreateDir(dir) {
             recursive: true,
         });
 
-        console.log(`Resolved & created directory: ${dir}`);
+        signale.info(`Resolved & created directory: ${dir}`);
         return dir;
     }
 
     const stat = await fs.stat(dir);
     if (!stat.isDirectory()) {
-        console.error(
+        signale.error(
             `Path ${dir} exists, but is not a directory (most likely a file).`
         );
         return null;
@@ -83,7 +84,7 @@ async function downloadFile(url, dir, filename) {
     const output = `${dir}/${filename}`;
 
     if (fsBase.existsSync(output)) {
-        console.log(`File already exists: ${output} -- Skipping`);
+        signale.info(`File already exists: ${output} -- Skipping`);
         return null;
     }
 
@@ -117,15 +118,16 @@ async function downloadFile(url, dir, filename) {
             });
 
             response.data.on('error', err => {
-                console.error(`An error occurred downloading URL: ${url}`);
-                console.error(`Could not save file: ${output}`);
+                signale.error(`An error occurred downloading URL: ${url}`);
+                signale.error(`Could not save file: ${output}`);
                 console.error(err);
 
                 reject(err);
             });
         });
     } catch (err) {
-        console.error(`An error occurred downloading URL: ${url} -- Skipping`);
+        signale.error(`An error occurred downloading URL: ${url} -- Skipping`);
+        console.error(err);
         return null;
     }
 }
@@ -148,7 +150,7 @@ async function saveTextFile(dir, filename, text) {
 
         return output;
     } catch (err) {
-        console.error(`Error writing file: ${output}`);
+        signale.error(`Error writing file: ${output}`);
         console.error(err);
 
         return null;
