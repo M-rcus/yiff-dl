@@ -11,31 +11,39 @@ signale.config({
     displayTimestamp: true,
 });
 
-const cli = meow(`
+const cli = meow(
+    `
     Usage
       $ yiff-dl <Creator ID or Yiff.party creator URL>
 
     Options
       --user-agent  Specifies a custom user agent.
       --output, -o  Specifies a custom output folder (default is a folder named 'yiff-dl-output' in the current working directory: ${process.cwd() + '/yiff-dl-output'}).
+      --subfolder, -s   If specified, a subfolder with the creator name is created in the output directory. Example: ${process.cwd() + '/yiff-dl-output/megturney'}
 
     Examples
       $ yiff-dl 3519586
       $ yiff-dl https://yiff.party/patreon/3519586
 `,
-{
-    flags: {
-        userAgent: {
-            type: 'string',
-            default: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
+    {
+        flags: {
+            userAgent: {
+                type: 'string',
+                default: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
+            },
+            output: {
+                type: 'string',
+                alias: 'o',
+                default: process.cwd() + '/yiff-dl-output',
+            },
+            subfolder: {
+                type: 'boolean',
+                alias: 's',
+                default: false,
+            },
         },
-        output: {
-            type: 'string',
-            alias: 'o',
-            default: process.cwd() + '/yiff-dl-output',
-        },
-    },
-});
+    }
+);
 
 if (cli.input.length === 0) {
     signale.error('Please specify creator ID!');
@@ -145,7 +153,10 @@ const maxNameLength = 60;
     const parsedPage = htmlparser.parse(getCreatorPage.data);
 
     signale.info(`Downloading started for creator: ${creatorDetails.name} (${creatorId})`);
-    const outputBase = cli.flags.output;
+    /**
+     * Specifies the base folder for output
+     */
+    const outputBase = cli.flags.output + (cli.flags.subfolder ? `/${creatorDetails.name}` : '');
 
     for (const postIndex in posts) {
         const post = posts[postIndex];
