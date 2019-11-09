@@ -152,6 +152,77 @@ const maxNameLength = 60;
     });
 
     const parsedPage = htmlparser.parse(getCreatorPage.data);
+    const paginationCount = parsedPage.querySelector('.paginate-count');
+    let maxPages = 1;
+
+    /**
+     * Keep track of all pages.
+     *
+     * Instead of zero-indexed array, let's make it an object
+     * that uses the page number as the index.
+     */
+    const allPosts = {};
+    const firstPagePosts = parsedPage.querySelectorAll('.yp-post');
+
+    for (const post of firstPagePosts)
+    {
+        /**
+         * Get ID and remove the first "p" used in the element ID.
+         */
+        const id = post.id.replace('p', '');
+        allPosts[id] = post;
+    }
+
+    /**
+     * Pagination count isn't available on
+     * creator pages with less than 50 posts.
+     */
+    if (paginationCount) {
+        const paginationText = paginationCount.innerHTML;
+        const paginationSplit = paginationText.split(' / ');
+        /**
+         * Convert to an actual number
+         */
+        maxPages = parseInt(paginationSplit[1], 10);
+
+        signale.info(`Found ${maxPages} pages for creator ${creatorInput}. Retrieving all pages.`);
+
+        /**
+         * Start retrieving pages from page 2 and beyond
+         * since we already retrieved the first page.
+         *
+         * But let's just also display the message for the first page
+         * to not confuse the user :)
+         */
+        signale.success(`Retrieved page #1/${maxPages} for creator: ${creatorInput}`);
+        for (let i = 2; i < maxPages + 1; i++)
+        {
+            const getPage = await _.client(
+                `https://yiff.party/patreon/${creatorId}?p=${i}`,
+                {
+                    responseType: 'document',
+                }
+            );
+
+            signale.success(`Retrieved page #${i}/${maxPages} for creator: ${creatorInput}`);
+            const page = htmlparser.parse(getPage.data);
+            const posts = page.querySelectorAll('.yp-post');
+
+            for (const post of posts) {
+                /**
+                 * Get ID and remove the first "p" used in the element ID.
+                 */
+                const id = post.id.replace('p', '');
+                allPosts[id] = post;
+            }
+        }
+
+        const totalPosts = (Object.keys(allPosts)).length;
+        signale.success(`Retrieved and parsed a total of ${totalPosts} posts from Yiff`);
+    }
+    else {
+        signale.info(`Creator ${creatorInput} seems to only have one page. Not retrieving any more pages.`);
+    }
 
     signale.info(`Downloading started for creator: ${creatorDetails.name} (${creatorId})`);
     /**
@@ -181,13 +252,14 @@ const maxNameLength = 60;
          */
         const postCreated = new Date(post.created * 1000);
         const postDate = await _.formatDate(postCreated);
+        const postId = post.id;
         let title = post.title;
 
         if (title.length > maxNameLength) {
             title = title.substring(0, maxNameLength - 1);
         }
 
-        let outputPath = `${outputBase}/${postDate}_${await _.normalizePath(title)}_${post.id}`;
+        let outputPath = `${outputBase}/${postDate}_${await _.normalizePath(title)}_${postId}`;
         outputPath = await _.checkAndCreateDir(outputPath);
 
         if (outputPath === null) {
@@ -200,7 +272,7 @@ const maxNameLength = 60;
          * Sometimes `post.body` might not exist (empty)
          */
         if (post.body) {
-            const inlineRegex = new RegExp(`/patreon_inline/${post.id}/`, 'g');
+            const inlineRegex = new RegExp(`/patreon_inline/${postId}/`, 'g');
             const postBody = post.body.replace(inlineRegex, './');
             const postBodyFile = await _.saveTextFile(outputPath, '_post_body.html', postBody);
             if (postBodyFile !== null) {
@@ -208,7 +280,8 @@ const maxNameLength = 60;
             }
         }
 
-        const postMedia = parsedPage.querySelector(`#p${post.id} .card-attachments`);
+        const parsedPost = allPosts[postId];
+        const postMedia = parsedPost.querySelector('.card-attachments');
         if (postMedia) {
             const title = postMedia.querySelector('.card-title');
             const textTitle = title ? title.toString() : '';
@@ -226,7 +299,7 @@ const maxNameLength = 60;
 
                     const mediaAttachment = await _.downloadFile(linkUrl, outputPath, filename);
                     if (mediaAttachment !== null) {
-                        signale.success(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${post.id})`);
+                        signale.success(`Downloaded 'Media' attachment: ${filename} for post titled: ${post.title} (${postId})`);
                     }
                 }
             }
@@ -241,7 +314,7 @@ const maxNameLength = 60;
             const inlineFile = await _.downloadFile(imageUrl, outputPath, fileName);
 
             if (inlineFile !== null) {
-                signale.success(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${post.id})`);
+                signale.success(`Downloaded inline (embedded) media file: ${fileName} for post titled: ${post.title} (${postId})`);
             }
         }
 
@@ -254,7 +327,7 @@ const maxNameLength = 60;
             const attachmentSave = await _.downloadFile(attachment.file_url, outputPath, fileName);
 
             if (attachmentSave !== null) {
-                signale.success(`Downloaded the attachment file: ${fileName} for post titled: ${post.title} (${post.id})`);
+                signale.success(`Downloaded the attachment file: ${fileName} for post titled: ${post.title} (${postId})`);
             }
         }
 
@@ -266,7 +339,7 @@ const maxNameLength = 60;
         if (postFile.post_file) {
             const postFileSave = await _.downloadFile(postFile.file_url, outputPath, postFile.file_name);
             if (postFileSave !== null) {
-                signale.success(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${post.id})`);
+                signale.success(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${postId})`);
             }
         }
     }
