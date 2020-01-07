@@ -11,6 +11,7 @@ Pull requests are welcome if you'd like to refactor parts (or all!) of the appli
 Requires [node.js/npm](https://nodejs.org/).
 
 - `npm install -g yiff-dl`
+    - Running this command will update `yiff-dl` if there's a new version.
 - [See "Basic usage"](#basic-usage)
 
 ### Manual installation
@@ -21,6 +22,14 @@ Cloning from git and 'manually' using the project.
 - `cd yiff-dl`
 - `npm install`
 - `node index.js 123456 -o /home/marcus/media/stuff/output/folder/here`
+
+#### Manual installation: Updating
+
+For updating you have to "pull" the new changes and make sure to update dependencies.
+
+- `cd yiff-dl`
+- `git pull`
+- `npm install`
 
 ## Basic usage
 
