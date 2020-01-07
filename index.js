@@ -336,7 +336,7 @@ const maxNameLength = 60;
          */
         const postFile = post.post_file;
 
-        if (postFile.post_file) {
+        if (postFile) {
             const postFileSave = await _.downloadFile(postFile.file_url, outputPath, postFile.file_name);
             if (postFileSave !== null) {
                 signale.success(`Downloaded the post file: ${postFile.file_name} for post titled: ${post.title} (${postId})`);
