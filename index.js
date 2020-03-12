@@ -306,6 +306,42 @@ const maxNameLength = 60;
         }
 
         /**
+         * Handle saving of "Embed data"
+         * If there has been some media embedded.
+         */
+        const embedData = parsedPost.querySelector('.card-embed');
+        if (embedData) {
+            /**
+             * For now we're just going to save the HTML itself into a file,
+             * just so that it's at the very least "saved".
+             *
+             * Then save any URLs we find into a separate file called `_embed_urls.txt`,
+             * which can be fed into `youtube-dl -a _embed_urls.txt` if the user wants to.
+             *
+             * In the future we might integrate with youtube-dl or similar, or maybe save
+             * the data as JSON file for easier parsing... maybe?
+             */
+            const embedUrls = embedData.querySelectorAll('a');
+            const urls = embedUrls.map(link => link.attributes.href);
+
+            /**
+             * No need to save a file if no URLs are found.
+             * Though this is unlikely to happen.
+             */
+            if (urls.length > 0) {
+                const embedUrlsSave = await _.saveTextFile(outputPath, '_embed_urls.txt', urls.join('\n'));
+                if (embedUrlsSave !== null) {
+                    signale.success(`Saved related embed URLs (${urls.length}): ${embedUrlsSave} for post titled: ${post.title} (${postId})`);
+                }
+            }
+
+            const embedBodySave = await _.saveTextFile(outputPath, '_embed_body.html', embedData.toString());
+            if (embedBodySave !== null) {
+                signale.success(`Saved embed data as HTML: ${embedBodySave} for post titled: ${post.title} (${postId})`);
+            }
+        }
+
+        /**
          * Save inline media (images) from the post body.
          */
         const inlineImages = await _.parseInline(post.body);
