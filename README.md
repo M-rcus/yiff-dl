@@ -4,7 +4,7 @@ Allows you to download all the files (attachments, shared files etc.) and posts 
 
 This application is kind of created as a quick-and-dirty implementation. While I'd like to spend more time cleaning up the structure of the code, I'm more focused on having a working application (as there aren't any that work that well IMO).
 
-Pull requests are welcome if you'd like to refactor parts (or all!) of the application. :smiley:
+Pull requests are welcome if you'd like to refactor parts (or all!) of the application. 😃
 
 ## Installation
 
@@ -12,6 +12,7 @@ Requires [node.js/npm](https://nodejs.org/).
 
 - `npm install -g yiff-dl`
     - Running this command will update `yiff-dl` if there's a new version.
+    - `npm` by default installs the latest [npm package version](https://www.npmjs.com/package/yiff-dl).
 - [See "Basic usage"](#basic-usage)
 
 ### Manual installation
@@ -62,3 +63,9 @@ yiff-dl allows for some customization using more advanced parameters.
 ## Notes
 
 - There are two HTML/DOM parsers in this project, mainly because I added one in the very beginning of the project and then forgot it existed a few weeks later when I implemented a new feature. Whoops.
+
+## Links
+
+- [Documentation site](https://m-rcus.github.io/yiff-dl/)
+    - Hosted on GitHub pages, reads from this `README.md` file!
+- [`yiff-dl` on NPM](https://www.npmjs.com/package/yiff-dl)
