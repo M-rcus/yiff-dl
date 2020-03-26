@@ -1,6 +1,6 @@
 {
     "name": "yiff-dl",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Downloads files from creators on Yiff",
     "main": "index.js",
     "scripts": {
@@ -21,7 +21,7 @@
         "filenamify": "^4.1.0",
         "jsdom": "^15.2.1",
         "meow": "^5.0.0",
-        "node-html-parser": "^1.2.12",
+        "node-html-parser": "^1.2.13",
         "progress": "^2.0.3",
         "signale": "^1.4.0"
     },

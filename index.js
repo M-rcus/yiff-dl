@@ -30,7 +30,7 @@ const cli = meow(
         flags: {
             userAgent: {
                 type: 'string',
-                default: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:69.0) Gecko/20100101 Firefox/69.0',
+                default: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:73.0) Gecko/20100101 Firefox/73.0',
             },
             output: {
                 type: 'string',
@@ -281,6 +281,17 @@ const maxNameLength = 60;
         }
 
         const parsedPost = allPosts[postId];
+
+        /**
+         * Hotfix for posts that can't be parsed due to being "undefined".
+         * For now it's unclear to me why this is the case, but it seems to be rare
+         * so I'm just skipping these posts for now.
+         */
+        if (!parsedPost) {
+            signale.warn(`Could not parse post wih ID: ${postId} -- Skipping.`);
+            continue;
+        }
+
         const postMedia = parsedPost.querySelector('.card-attachments');
         if (postMedia) {
             const title = postMedia.querySelector('.card-title');
