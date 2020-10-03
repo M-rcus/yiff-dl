@@ -18,10 +18,10 @@
     "homepage": "https://github.com/M-rcus/yiff-dl#readme",
     "dependencies": {
         "axios": "^0.19.2",
-        "filenamify": "^4.1.0",
+        "filenamify": "^4.2.0",
         "jsdom": "^15.2.1",
-        "meow": "^7.0.1",
-        "node-html-parser": "^1.2.20",
+        "meow": "^7.1.1",
+        "node-html-parser": "^1.2.21",
         "progress": "^2.0.3",
         "signale": "^1.4.0"
     },
