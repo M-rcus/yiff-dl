@@ -9,8 +9,8 @@ Pull requests are welcome if you'd like to refactor parts (or all!) of the appli
 ## Installation
 
 Requires [node.js/npm](https://nodejs.org/).  
-It has been developed using version 12.x.x - which is the current LTS (Long-Term Support) version.  
-In theory it should work with v10.x.x and v14.x.x, but no guarantees.
+It has been developed using version [`12.x.x`](https://nodejs.org/en/download/), which is the current LTS (Long-Term Support) version.  
+In theory it should work with `v10.x.x` and `v14.x.x`, but no guarantees.
 
 - `npm install -g yiff-dl`
     - Running this command will update `yiff-dl` if there's a new version.
