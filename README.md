@@ -1,3 +1,9 @@
+# Archived
+⚠️ **This project has been archived** ⚠️
+
+As yiff.party is no longer up and running, I am archiving this project.  
+The alternative as of right now seems to be [Kemono.party](https://kemono.party/) and if you wish to rip Kemono, you can use another 3rd party tool called [gallery-dl](https://github.com/mikf/gallery-dl) (which also supports many other services).
+
 # yiff-dl
 
 Allows you to download all the files (attachments, shared files etc.) and posts from a Patreon creator on [Yiff.party](https://yiff.party/).
